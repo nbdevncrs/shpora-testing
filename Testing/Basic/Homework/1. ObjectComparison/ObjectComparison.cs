@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Equivalency;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
@@ -14,7 +15,7 @@ public class ObjectComparison
         var expectedTsar = GetExpectedCurrentTsar();
 
         actualTsar.Should().BeEquivalentTo(expectedTsar, config => config
-            .Excluding(info => info.Name == "Id")
+            .Excluding((IMemberInfo info) => info.Name == "Id")
             .IgnoringCyclicReferences());
 
         /*
