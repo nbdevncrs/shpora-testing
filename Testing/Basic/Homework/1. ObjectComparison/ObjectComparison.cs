@@ -8,17 +8,14 @@ public class ObjectComparison
 {
     [Test]
     [Description("Проверка текущего царя")]
-    [Category("ToRefactor")]
-    public void CheckCurrentTsar()
+    public void TsarRegistry_ShouldReturnExpectedCurrentTsar_Test()
     {
         var actualTsar = TsarRegistry.GetCurrentTsar();
-
-        var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
-            new Person("Vasili III of Russia", 28, 170, 60, null));
+        var expectedTsar = GetExpectedCurrentTsar();
 
         actualTsar.Should().BeEquivalentTo(expectedTsar, config => config
-            .Excluding(x => x.Id)
-            .Excluding(x => x.Parent.Id));
+            .Excluding(info => info.Name == "Id")
+            .IgnoringCyclicReferences());
 
         /*
          Заменяем на Should().BeEquivalentTo() из Fluent Assertions.
@@ -51,11 +48,10 @@ public class ObjectComparison
 
     [Test]
     [Description("Альтернативное решение. Какие у него недостатки?")]
-    public void CheckCurrentTsar_WithCustomEquality()
+    public void TsarRegistry_ShouldReturnExpectedCurrentTsar_WithCustomEquality_Test()
     {
         var actualTsar = TsarRegistry.GetCurrentTsar();
-        var expectedTsar = new Person("Ivan IV The Terrible", 54, 170, 70,
-            new Person("Vasili III of Russia", 28, 170, 60, null));
+        var expectedTsar = GetExpectedCurrentTsar();
 
         // Какие недостатки у такого подхода? 
         ClassicAssert.True(AreEqual(actualTsar, expectedTsar));
@@ -71,6 +67,12 @@ public class ObjectComparison
             && actual.Height == expected.Height
             && actual.Weight == expected.Weight
             && AreEqual(actual.Parent, expected.Parent);
+    }
+
+    private static Person GetExpectedCurrentTsar()
+    {
+        var expectedTsarParent = new Person("Vasili III of Russia", 28, 170, 60, null);
+        return new Person("Ivan IV The Terrible", 54, 170, 70, expectedTsarParent);
     }
 
     /*
@@ -92,8 +94,8 @@ public class ObjectComparison
       Однако, если мы хотим вникнуть в подробности, что конкретно происходит в тесте, то мы опускаем глаза и видим
       не очень большой но неприятный отрывок кода, в котором необходимо разобраться. Тут даже используется рекурсия,
       чтобы проверять объект по ссылке на родителя (рекурсия имеет свойство вызывать переполнение стека, чисто
-      теоретически это может произойти и здесь, если человек чудом сам себе родитель, нет проверки на 
-      циклические ссылки). Относительно "моего" решения разница безусловно есть, но назвать читаемость явной 
+      теоретически это может произойти и здесь, если человек чудом сам себе родитель, нет проверки на
+      циклические ссылки). Относительно "моего" решения разница безусловно есть, но назвать читаемость явной
       проблемой этого решения нельзя, слегка приятнуто за уши
 
       Небольшой плюс альтернативного решения:
